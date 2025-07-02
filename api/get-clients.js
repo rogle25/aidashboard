@@ -1,12 +1,12 @@
 // File path: /api/get-clients.js
 
 export default async function handler(req, res) {
-  const MONDAY_API_KEY = process.env.MONDAY_API_KEY || 'YOUR_API_KEY_HERE';
+  const MONDAY_API_KEY = process.env.MONDAY_API_KEY || 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI0MDU3ODcwOSwiYWFpIjoxMSwidWlkIjozODQyMzU4MSwiaWFkIjoiMjAyMy0wMi0yOFQyMDo1NTowOC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6NzQ2NzYwOSwicmduIjoidXNlMSJ9.jC6TbLUCj2Q3dqXl-obCWgMQxsdpuyrp2oIAjJ2U-vI';
   const BOARD_ID = 'YOUR_BOARD_ID_HERE';
 
   const query = `
     query {
-      boards(ids: ${BOARD_ID}) {
+      boards(ids: ${5504468905}) {
         items {
           id
           name
@@ -37,9 +37,9 @@ export default async function handler(req, res) {
     const clients = items.map((item) => ({
       id: item.id,
       name: item.name,
-      missingDocs: extractValue(item.column_values, 'missing_docs') || 'N/A',
-      lastContact: extractValue(item.column_values, 'last_contact') || 'N/A',
-      status: extractValue(item.column_values, 'status') || 'Unknown',
+      missingDocs: extractValue(item.column_values, 'status9') || 'N/A',
+      lastContact: extractValue(item.column_values, 'date79__1') || 'N/A',
+      status: extractValue(item.column_values, 'mirror_11__1') || 'Unknown',
     }));
 
     res.status(200).json(clients);
