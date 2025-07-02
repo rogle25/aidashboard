@@ -1,40 +1,32 @@
-// Enhanced Missing Document Tracker with:
-// - Lucide icons
-// - Animated cards
-// - Search and filter
-// - Live backend hookup ready structure
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Mail, Loader } from 'lucide-react';
 
-const mockClients = [
-  {
-    id: 'client_001',
-    name: 'Patricia Wilson',
-    missingDocs: ['W-2'],
-    lastContact: '2025-06-25',
-    status: 'Notified',
-  },
-  {
-    id: 'client_002',
-    name: 'James Lee',
-    missingDocs: ['1099-NEC', 'Bank Statement'],
-    lastContact: '2025-06-22',
-    status: 'Pending',
-  },
-];
-
 export default function App() {
-  const [clients, setClients] = useState(mockClients);
+  const [clients, setClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingId, setLoadingId] = useState(null);
   const [message, setMessage] = useState('');
+
+  // Fetch live data from API
+  useEffect(() => {
+    async function fetchClients() {
+      try {
+        const res = await fetch('/api/get-clients');
+        const data = await res.json();
+        setClients(data);
+      } catch (err) {
+        console.error('Failed to load clients:', err);
+      }
+    }
+
+    fetchClients();
+  }, []);
 
   const sendReminder = async (clientId) => {
     setLoadingId(clientId);
     setMessage('');
     try {
-      const res = await fetch('https://your-backend-api.com/send-reminder', {
+      const res = await fetch('/api/send-reminder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ clientId }),
@@ -49,7 +41,7 @@ export default function App() {
 
   const filteredClients = clients.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.missingDocs.join(',').toLowerCase().includes(searchTerm.toLowerCase())
+    c.missingDocs?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -80,10 +72,10 @@ export default function App() {
           >
             <h2 className="text-xl font-semibold mb-1">{client.name}</h2>
             <p>
-              <strong>Missing:</strong> {client.missingDocs.join(', ')}
+              <strong>Missing:</strong> {client.missingDocs || 'None'}
             </p>
             <p>
-              <strong>Last Contact:</strong> {client.lastContact}
+              <strong>Last Contact:</strong> {client.lastContact || 'N/A'}
             </p>
             <p>
               <strong>Status:</strong>{' '}
