@@ -1,12 +1,12 @@
-// File path: /api/get-clients.js
+// File: /pages/api/get-clients.js
 
 export default async function handler(req, res) {
-  const MONDAY_API_KEY = process.env.MONDAY_API_KEY || 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjI0MDU3ODcwOSwiYWFpIjoxMSwidWlkIjozODQyMzU4MSwiaWFkIjoiMjAyMy0wMi0yOFQyMDo1NTowOC4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6NzQ2NzYwOSwicmduIjoidXNlMSJ9.jC6TbLUCj2Q3dqXl-obCWgMQxsdpuyrp2oIAjJ2U-vI';
-  const BOARD_ID = 'YOUR_BOARD_ID_HERE';
+  const MONDAY_API_KEY = process.env.MONDAY_API_KEY || 'YOUR_API_KEY'; // fallback for local dev
+  const BOARD_ID = process.env.MONDAY_BOARD_ID || '5504468905'; // safer fallback
 
   const query = `
     query {
-      boards(ids: ${5504468905}) {
+      boards(ids: ${BOARD_ID}) {
         items {
           id
           name
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': MONDAY_API_KEY,
+        Authorization: MONDAY_API_KEY,
       },
       body: JSON.stringify({ query }),
     });
@@ -33,13 +33,12 @@ export default async function handler(req, res) {
     const { data } = await response.json();
     const items = data?.boards?.[0]?.items || [];
 
-    // Placeholder mapping - update keys to match your board
     const clients = items.map((item) => ({
       id: item.id,
       name: item.name,
-      missingDocs: extractValue(item.column_values, 'status9') || 'N/A',
-      lastContact: extractValue(item.column_values, 'date79__1') || 'N/A',
-      status: extractValue(item.column_values, 'mirror_11__1') || 'Unknown',
+      missingDocs: getColumnValue(item.column_values, 'status9'),       // 📝 Missing Docs
+      lastContact: getColumnValue(item.column_values, 'date79__1'),     // 📅 Last Contact Date
+      status: getColumnValue(item.column_values, 'mirror_11__1'),       // 📌 Status
     }));
 
     res.status(200).json(clients);
@@ -49,15 +48,7 @@ export default async function handler(req, res) {
   }
 }
 
-function extractValue(columns, idOrTitle) {
-  const match = columns.find(
-    (col) => col.id === idOrTitle || col.title.toLowerCase() === idOrTitle.toLowerCase()
-  );
-  return match?.text || null;
+function getColumnValue(columns, id) {
+  const column = columns.find((col) => col.id === id);
+  return column?.text || 'N/A';
 }
-
-// 👇 Notes:
-// - Replace 'YOUR_API_KEY_HERE' with your actual API key
-// - Replace 'YOUR_BOARD_ID_HERE' with your Monday.com board ID
-// - Update 'missing_docs', 'last_contact', 'status' with your real column IDs or names
-// - Secure your key with Vercel environment variable: MONDAY_API_KEY
